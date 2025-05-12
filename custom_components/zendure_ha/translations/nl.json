@@ -15,9 +15,8 @@
           "username": "Zendure Gebruikersnaam",
           "password": "Zendure Wachtwoord",
           "p1meter": "P1 Sensor voor slimme matching",
-          "broker": "Lokale MQTT broker",
-          "brokeruser": "Lokale MQTT broker Gebruikersnaam",
-          "brokerpsw": "Lokale MQTT broker Wachtwoord",
+          "mqttlog": "MQTT-Communicatie loggen",
+          "mqttlocal": "Lokale Mosquitto MQTT AddOn gebruiken",
           "wifissid": "Wifi SSID",
           "wifipsw": "Wifi Wachtwoord"
         }
@@ -27,9 +26,8 @@
           "username": "Zendure Gebruikersnaam",
           "password": "Zendure Wachtwoord",
           "p1meter": "P1 Sensor voor slimme matching",
-          "broker": "Lokale MQTT broker",
-          "brokeruser": "Lokale MQTT broker Gebruikersnaam",
-          "brokerpsw": "Lokale MQTT broker Wachtwoord",
+          "mqttlog": "MQTT-Communicatie loggen",
+          "mqttlocal": "Lokale Mosquitto MQTT AddOn gebruiken",
           "wifissid": "Wifi SSID",
           "wifipsw": "Wifi Wachtwoord"
         }
@@ -57,8 +55,20 @@
       }
     },
     "number": {
+      "input_limit": {
+        "name": "Limiet Opladen"
+      },
+      "output_limit": {
+        "name": "Limiet Ontladen"
+      },
       "manual_power": {
-        "name": "Handmatige Vermogen"
+        "name": "Handmatig vermogen"
+      },
+      "min_soc": {
+        "name": "SOC Minimaal"
+      },
+      "soc_set": {
+        "name": "SOC Maximaal"
       }
     },
     "sensor": {
@@ -76,11 +86,24 @@
           "10": "Elektriciteitsprijs"
         }
       },
-      "bat_volt": {
-        "name": "Batterijspanning"
+      "so_h": {
+        "name": "Gezondheidsstatus"
+      },
+      "soc_status": {
+        "name": "Soc status",
+        "state": {
+          "0": "Actief",
+          "1": "Automatische kalibratie"
+        }
       },
       "hub_state": {
         "name": "Hub Status"
+      },
+      "pack_num": {
+        "name": "Batterij Aantal"
+      },
+      "bat_volt": {
+        "name": "Batterijspanning"
       },
       "electric_level": {
         "name": "Batterij"
@@ -92,8 +115,8 @@
         "name": "Laadmodus",
         "state": {
           "0": "Geen",
-          "1": "modus 1",
-          "2": "modus 2"
+          "1": "Modus 1",
+          "2": "Modus 2"
         }
       },
       "charging_type": {
@@ -116,16 +139,22 @@
         }
       },
       "pack_input_power": {
-        "name": "Batterij Output"
+        "name": "Batterij Ontladen"
       },
       "output_pack_power": {
-        "name": "Batterij Invoer"
+        "name": "Batterij Laden"
       },
       "hyper_tmp": {
-        "name": "Batterijtemperatuur"
+        "name": "Hyper Temperatuur"
       },
       "strength": {
         "name": "Wifi Signaalsterkte"
+      },
+      "remain_out_time": {
+        "name": "Resterende Ontlaadtijd"
+      },
+      "remain_input_time": {
+        "name": "Resterende Laadtijd"
       }
     },
     "select": {
@@ -140,14 +169,22 @@
         "name": "Bedrijfsmodus",
         "state": {
           "off": "Uit",
-          "manual": "Handmatige Vermogen",
+          "manual": "Handmatig Vermogen",
           "smart": "Slimme Matching"
         }
       },
       "pass_mode": {
         "name": "Bypass-modus",
         "state": {
-          "auto": "automatisch",
+          "auto": "Automatisch",
+          "off": "Altijd Uit",
+          "on": "Altijd Aan"
+        }
+      },
+      "grid_reverse": {
+        "name": "Bypass-modus",
+        "state": {
+          "auto": "Automatisch",
           "off": "Altijd Uit",
           "on": "Altijd Aan"
         }

@@ -1,6 +1,8 @@
 """Interfaces with the Zendure Integration api sensors."""
 
 import logging
+import traceback
+from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
@@ -10,6 +12,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.template import Template
+from homeassistant.util import dt as dt_util
 from stringcase import snakecase
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,11 +20,11 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(_hass: HomeAssistant, _config_entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the Zendure sensor."""
-    ZendureSensor.addSensors = async_add_entities
+    ZendureSensor.add = async_add_entities
 
 
 class ZendureSensor(SensorEntity):
-    addSensors: AddEntitiesCallback
+    add: AddEntitiesCallback
 
     def __init__(
         self,
@@ -60,10 +63,11 @@ class ZendureSensor(SensorEntity):
         except Exception as err:
             self._attr_native_value = value
             _LOGGER.error(f"Error {err} setting state: {self._attr_unique_id} => {value}")
+            _LOGGER.error(traceback.format_exc())
 
 
 class ZendureRestoreSensor(ZendureSensor, RestoreEntity):
-    """Representation of a Zendure select entity with restore."""
+    """Representation of a Zendure sensor entity with restore."""
 
     def __init__(
         self,
@@ -77,6 +81,9 @@ class ZendureRestoreSensor(ZendureSensor, RestoreEntity):
     ) -> None:
         """Initialize a select entity."""
         super().__init__(deviceinfo, uniqueid, template, uom, deviceclass, stateclass, precision)
+        self.last_value = 0
+        self.lastValueUpdate = dt_util.utcnow()
+        self._attr_native_value = 0.0
 
     async def async_added_to_hass(self) -> None:
         """Handle entity which will be added."""
@@ -85,3 +92,39 @@ class ZendureRestoreSensor(ZendureSensor, RestoreEntity):
         if state is not None and state.state != "unknown":
             self._attr_native_value = state.state
             _LOGGER.debug(f"Restored state for {self.entity_id}: {self._attr_native_value}")
+
+    def aggregate(self, time: datetime, value: int) -> None:
+        # Get the kWh value from the last value and the time since the last update
+        if (self.last_reset is None or self.last_reset.date() != time.date()) and self.state_class != "total_increasing":
+            self._attr_native_value = 0.0
+            self._attr_last_reset = time
+        else:
+            kWh = self.last_value * (time.timestamp() - self.lastValueUpdate.timestamp()) / 3600000
+            self._attr_native_value = kWh + float(self.state)
+
+        self.last_value = value
+        self.lastValueUpdate = time
+        if self.hass and self.hass.loop.is_running():
+            self.schedule_update_ha_state()
+
+
+class ZendureVersionSensor(ZendureSensor):
+    """Representation of a Zendure Version Sensor."""
+
+    def update_value(self, value: Any) -> None:
+        try:
+            new_value = self._value_template.async_render_with_possible_json_value(value, None) if self._value_template is not None else value
+
+            if self.hass and new_value != self._attr_native_value:
+                version = int(new_value)
+                major = (version & 0xF000) >> 12
+                minor = (version & 0x0F00) >> 8
+                build = version & 0x00FF
+                self._attr_native_value = f"v{major}.{minor}.{build}"
+                if self.hass and self.hass.loop.is_running():
+                    self.schedule_update_ha_state()
+
+        except Exception as err:
+            self._attr_native_value = value
+            _LOGGER.error(f"Error {err} setting state: {self._attr_unique_id} => {value}")
+            _LOGGER.error(traceback.format_exc())

@@ -3,18 +3,12 @@
 from __future__ import annotations
 
 import logging
-import traceback
-from base64 import b64decode
-from collections.abc import Callable
 from typing import Any
 
 from aiohttp import ClientSession
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from paho.mqtt import client as mqtt_client
-
-from .zenduredevice import ZendureDeviceDefinition
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,10 +79,6 @@ class Api:
         _LOGGER.error(f"Unable to connect to Zendure {self.zen_api}!")
         return False
 
-    def get_mqtt(self, onMessage: Callable) -> mqtt_client.Client:
-        _LOGGER.info(f"Creating mqtt client {self.token} {self.mqttUrl} {b64decode(self.mqttinfo.encode()).decode('latin-1')}")
-        return self.mqtt(self.token, "zenApp", b64decode(self.mqttinfo.encode()).decode("latin-1"), onMessage)
-
     async def _get_detail(self, deviceId: str) -> Any:
         payload = {"deviceId": deviceId}
         url = f"{self.zen_api}{SF_DEVICEDETAILS_PATH}"
@@ -103,11 +93,10 @@ class Api:
         _LOGGER.error(response.text)
         return None
 
-    async def getDevices(self) -> dict[str, ZendureDeviceDefinition]:
+    async def getDevices(self) -> Any:
         if not self.session:
             raise SessionNotInitializedError
 
-        devices: dict[str, ZendureDeviceDefinition] = {}
         try:
             url = f"{self.zen_api}{SF_DEVICELIST_PATH}"
             _LOGGER.info("Getting device list ...")
@@ -115,56 +104,13 @@ class Api:
             response = await self.session.post(url=url, headers=self.headers)
             if response.ok:
                 respJson = await response.json()
-                deviceInfo = respJson["data"]
-                for dev in deviceInfo:
-                    if (deviceId := dev["id"]) is None or (prodName := dev["productName"]) is None:
-                        continue
-                    try:
-                        if not (data := await self._get_detail(deviceId)) or (deviceKey := data.get("deviceKey", None)) is None:
-                            _LOGGER.debug(f"Unable to get details for: {deviceId} {prodName}")
-                            continue
-                        _LOGGER.info(f"Adding device: {deviceKey} {prodName}")
-                        devices[deviceKey] = ZendureDeviceDefinition(
-                            productKey=data["productKey"],
-                            deviceName=data["deviceName"],
-                            snNumber=data["snNumber"],
-                            productName=prodName,
-                            ip_address=data.get("ip", None),
-                        )
+                return respJson["data"]
 
-                        _LOGGER.info(f"Data: {data}")
-                    except Exception as e:
-                        _LOGGER.error(traceback.format_exc())
-                        _LOGGER.error(e)
-
-            else:
-                _LOGGER.error(f"Fetching device list failed: {response.text}")
+            _LOGGER.error(f"Fetching device list failed: {response.text}")
         except Exception as e:
             _LOGGER.error(e)
 
-        return devices
-
-    def mqtt(self, clientId: str, username: str, password: str, onMessage: Callable) -> mqtt_client.Client:
-        _LOGGER.info(f"Create mqtt client!! {clientId}")
-        client = mqtt_client.Client(client_id=clientId, clean_session=False)
-        client.username_pw_set(username=username, password=password)
-        client.on_connect = self.onConnect
-        client.on_disconnect = self.onDisconnect
-        client.on_message = onMessage
-        client.connect(self.mqttUrl, 1883)
-
-        client.suppress_exceptions = True
-        client.loop()
-        client.loop_start()
-        return client
-
-    def onConnect(self, _client: Any, _userdata: Any, _flags: Any, _rc: Any) -> None:
-        _LOGGER.info("Client has been connected")
-
-    def onDisconnect(self, _client: Any, _userdata: Any, _rc: Any) -> None:
-        _LOGGER.info("Client has been disconnected; trying to restart")
-        _client.reconnect()
-        _client.loop_start()
+        return None
 
 
 class SessionNotInitializedError(Exception):
