@@ -86,6 +86,15 @@
           "10": "Electricity Price"
         }
       },
+      "aggr_charge_totalk_wh": {
+        "name": "Total Charged"
+      },
+      "aggr_discharge_totalk_wh": {
+        "name": "Total Discharged"
+      },
+      "aggr_solar_totalk_wh": {
+        "name": "Total Solar"
+      },
       "so_h": {
         "name": "State of health"
       },
@@ -190,6 +199,18 @@
       },
       "remain_input_time": {
         "name": "Remaining Charge Time"
+      },
+      "soft_version": {
+        "name": "BMS Firmware"
+      },
+      "dspversion": {
+        "name": "AC Firmware"
+      },
+      "master_soft_version": {
+        "name": "Master Firmware"
+      },
+      "masterhaer_version": {
+        "name": "Hardware Version"
       }
     },
     "select": {
@@ -209,14 +230,6 @@
           "cluster1200": "Cluster max. 1200w",
           "cluster2400": "Cluster max. 2400w",
           "cluster3600": "Cluster max. 3600w"
-        }
-      },
-      "device_mqtt_server": {
-        "name": "Device MQTT  Server",
-        "state": {
-          "0": "Zendure Cloud MQTT",
-          "1": "Local MQTT",
-          "2": "Hybrid: local + Zendure MQTT"
         }
       },
       "operation": {
