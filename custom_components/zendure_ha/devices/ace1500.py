@@ -50,8 +50,8 @@ class ACE1500(ZendureDevice):
             self.sensor("packInputPower", None, "W", "power", "measurement"),
             self.sensor("outputPackPower", None, "W", "power", "measurement"),
             self.sensor("outputHomePower", None, "W", "power", "measurement"),
-            self.sensor("remainOutTime", "{{ (value / 60) }}", "h", "duration"),
-            self.sensor("remainInputTime", "{{ (value / 60) }}", "h", "duration"),
+            self.calculate("remainOutTime", self.remainingOutput, "h", "duration"),
+            self.calculate("remainInputTime", self.remainingInput, "h", "duration"),
             self.sensor("packNum", None),
             self.sensor("electricLevel", None, "%", "battery"),
             self.sensor("energyPower", None, "W"),
@@ -64,7 +64,7 @@ class ACE1500(ZendureDevice):
         ]
         ZendureSensor.add(sensors)
 
-        selects = [self.select("acMode", {1: "input", 2: "output"}, self.update_ac_mode)]
+        selects = [self.select("acMode", {2: "input", 1: "output"}, self.update_ac_mode)]
         ZendureSelect.add(selects)
 
     def entityUpdate(self, key: Any, value: Any) -> bool:

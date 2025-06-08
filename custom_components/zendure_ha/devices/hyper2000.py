@@ -38,7 +38,6 @@ class Hyper2000(ZendureDevice):
             self.binary("pass"),
             self.binary("lowTemperature"),
             self.binary("autoHeat"),
-            self.binary("ambientSwitch"),
             self.binary("localState"),
             self.binary("ctOff"),
         ]
@@ -66,8 +65,8 @@ class Hyper2000(ZendureDevice):
             self.sensor("packInputPower", None, "W", "power", "measurement"),
             self.sensor("outputPackPower", None, "W", "power", "measurement"),
             self.sensor("outputHomePower", None, "W", "power", "measurement"),
-            self.sensor("remainOutTime", "{{ (value / 60) }}", "h", "duration"),
-            self.sensor("remainInputTime", "{{ (value / 60) }}", "h", "duration"),
+            self.calculate("remainOutTime", self.remainingOutput, "h", "duration"),
+            self.calculate("remainInputTime", self.remainingInput, "h", "duration"),
             self.sensor("packNum", None),
             self.sensor("electricLevel", None, "%", "battery", "measurement"),
             self.sensor("energyPower", None, "W"),
@@ -86,9 +85,6 @@ class Hyper2000(ZendureDevice):
             self.sensor("plugState"),
             self.sensor("pvBrand"),
             self.sensor("VoltWakeup", None, "V", "voltage", "measurement"),
-            self.sensor("ambientLightNess"),
-            self.sensor("ambientLightColor"),
-            self.sensor("ambientLightMode"),
             self.sensor("OldMode"),
             self.sensor("circuitCheckMode"),
             self.version("dspversion"),
@@ -97,6 +93,10 @@ class Hyper2000(ZendureDevice):
         ZendureSensor.add(sensors)
 
         self.nosensor(["invOutputPower"])
+        self.nosensor(["ambientLightNess"])
+        self.nosensor(["ambientLightColor"])
+        self.nosensor(["ambientLightMode"])
+        self.nosensor(["ambientSwitch"])
 
         selects = [
             self.select("acMode", {1: "input", 2: "output"}, self.update_ac_mode),

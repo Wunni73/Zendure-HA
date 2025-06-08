@@ -1,4 +1,4 @@
-"""Module for the Hyper2000 device integration in Home Assistant."""
+"""Module for the Solarflow2400AC device integration in Home Assistant."""
 
 import logging
 from typing import Any
@@ -37,7 +37,7 @@ class SolarFlow2400AC(ZendureDevice):
         ZendureBinarySensor.add(binaries)
 
         self.numbers = [
-            self.number("inputLimit", None, "W", "power", 0, 1200, NumberMode.SLIDER),
+            self.number("inputLimit", None, "W", "power", 0, 2400, NumberMode.SLIDER),
             self.number("outputLimit", None, "W", "power", 0, 200, NumberMode.SLIDER),
             self.number("socSet", "{{ value | int / 10 }}", "%", None, 5, 100, NumberMode.SLIDER),
             self.number("minSoc", "{{ value | int / 10 }}", "%", None, 5, 100, NumberMode.SLIDER),
@@ -56,8 +56,8 @@ class SolarFlow2400AC(ZendureDevice):
             self.sensor("packInputPower", None, "W", "power", "measurement"),
             self.sensor("outputPackPower", None, "W", "power", "measurement"),
             self.sensor("outputHomePower", None, "W", "power", "measurement"),
-            self.sensor("remainOutTime", "{{ (value / 60) }}", "h", "duration"),
-            self.sensor("remainInputTime", "{{ (value / 60) }}", "h", "duration"),
+            self.calculate("remainOutTime", self.remainingOutput, "h", "duration"),
+            self.calculate("remainInputTime", self.remainingInput, "h", "duration"),
             self.sensor("packNum", None),
             self.sensor("electricLevel", None, "%", "battery"),
             self.sensor("energyPower", None, "W"),
@@ -67,6 +67,8 @@ class SolarFlow2400AC(ZendureDevice):
             self.sensor("gridInputPower", None, "W", "power", "measurement"),
             self.sensor("pass", None),
             self.sensor("strength", None),
+            self.sensor("hyperTmp", "{{ (value | float - 2731) / 10 | round(1) }}", "°C", "temperature", "measurement"),
+            self.sensor("gridOffPower", None, "W", "power", "measurement"),
         ]
         ZendureSensor.add(sensors)
 

@@ -55,8 +55,8 @@ class AIO2400(ZendureDevice):
             self.sensor("packInputPower", None, "W", "power", "measurement"),
             self.sensor("outputPackPower", None, "W", "power", "measurement"),
             self.sensor("outputHomePower", None, "W", "power", "measurement"),
-            self.sensor("remainOutTime", "{{ (value / 60) }}", "h", "duration"),
-            self.sensor("remainInputTime", "{{ (value / 60) }}", "h", "duration"),
+            self.calculate("remainOutTime", self.remainingOutput, "h", "duration"),
+            self.calculate("remainInputTime", self.remainingInput, "h", "duration"),
             self.sensor("packNum", None),
             self.sensor("electricLevel", None, "%", "battery"),
             self.sensor("energyPower", None, "W"),
@@ -69,7 +69,11 @@ class AIO2400(ZendureDevice):
         ]
         ZendureSensor.add(sensors)
 
-        selects = [self.select("acMode", {1: "input", 2: "output"}, self.update_ac_mode)]
+        selects = [
+            self.select("acMode", {1: "input", 2: "output"}, self.update_ac_mode),
+            self.select("passMode", {0: "auto", 2: "on", 1: "off"}),
+            self.select("autoRecover", {0: "off", 1: "on"}),
+        ]
         ZendureSelect.add(selects)
 
     def entityUpdate(self, key: Any, value: Any) -> bool:

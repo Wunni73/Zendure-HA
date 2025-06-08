@@ -18,7 +18,7 @@ from .binary_sensor import ZendureBinarySensor
 from .const import DOMAIN
 from .number import ZendureNumber
 from .select import ZendureRestoreSelect, ZendureSelect
-from .sensor import ZendureRestoreSensor, ZendureSensor, ZendureVersionSensor
+from .sensor import ZendureCalcSensor, ZendureRestoreSensor, ZendureSensor
 from .switch import ZendureSwitch
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ class ZendureBase:
             self.attr_device_info["via_device"] = (DOMAIN, parent)
         if swVersion is not None:
             self.attr_device_info["sw_version"] = swVersion
+        self.kwh = 0.0
 
     def entitiesCreate(self) -> None:
         return
@@ -181,7 +182,21 @@ class ZendureBase:
             self.entities[uid] = self.empty
 
     def version(self, uniqueid: str) -> ZendureSensor:
-        s = ZendureVersionSensor(self.attr_device_info, uniqueid)
+        s = ZendureCalcSensor(self.attr_device_info, uniqueid)
+        s.calculate = s.calculate_version
+        self.entities[uniqueid] = s
+        return s
+
+    def calculate(
+        self,
+        uniqueid: str,
+        calculate: Callable[[Any], Any],
+        uom: str | None = None,
+        deviceclass: Any | None = None,
+        stateclass: Any | None = None,
+        precision: int | None = None,
+    ) -> ZendureSensor:
+        s = ZendureCalcSensor(self.attr_device_info, uniqueid, calculate, uom, deviceclass, stateclass, precision)
         self.entities[uniqueid] = s
         return s
 
@@ -240,3 +255,38 @@ class ZendureBase:
                 sensor.update_value(value)
             except Exception as err:
                 _LOGGER.error(err)
+
+    def remainingOutput(self, value: Any) -> Any:
+        """Calculate the remaining output time."""
+        if value is None:
+            return None
+        level = self.asInt("electricLevel")
+        soc = self.asInt("minSoc")
+        if value <= 0 or level <= soc:
+            return 0
+        value = float(value) / 60
+        if value >= 999 or level == 0:
+            return 999
+        return value * (level - soc) / level
+
+    def remainingInput(self, value: Any) -> Any:
+        """Calculate the remaining input time."""
+        if value is None:
+            return None
+        level = self.asInt("electricLevel")
+        soc = self.asInt("socSet")
+        if level >= soc:
+            return 0
+        kwOut = self.asInt("outputPackPower")
+        if kwOut == 0:
+            return 999
+
+        charge_hours = self.kwh * 10 / kwOut * (soc - level)
+        return min(999, max(0, charge_hours))
+
+        # if value <= 0 or level >= soc:
+        #     return 0
+        # value = float(value) / 60
+        # if value >= 999:
+        #     return 999
+        # return value * (soc - level) / (100 - level)

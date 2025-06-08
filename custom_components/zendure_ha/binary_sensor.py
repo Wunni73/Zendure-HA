@@ -3,7 +3,8 @@
 import logging
 from typing import Any
 
-from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription
+from homeassistant.components.binary_sensor import (
+    BinarySensorEntity, BinarySensorEntityDescription)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -50,7 +51,7 @@ class ZendureBinarySensor(BinarySensorEntity):
             if self._attr_is_on == is_on:
                 return
 
-            _LOGGER.info(f"Update binairy_sensor: {self._attr_unique_id} => {is_on}")
+            _LOGGER.info(f"Update binary_sensor: {self._attr_unique_id} => {is_on}")
 
             self._attr_is_on = is_on
             if self.hass and self.hass.loop.is_running():

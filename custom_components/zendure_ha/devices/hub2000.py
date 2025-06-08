@@ -35,7 +35,6 @@ class Hub2000(ZendureDevice):
             self.binary("heatState"),
             self.binary("reverseState"),
             self.binary("pass"),
-            self.binary("autoRecover"),
         ]
         ZendureBinarySensor.add(binaries)
 
@@ -53,10 +52,11 @@ class Hub2000(ZendureDevice):
             self.sensor("packInputPower", None, "W", "power", "measurement"),
             self.sensor("outputPackPower", None, "W", "power", "measurement"),
             self.sensor("outputHomePower", None, "W", "power", "measurement"),
-            self.sensor("remainOutTime", "{{ (value / 60) }}", "h", "duration"),
-            self.sensor("remainInputTime", "{{ (value / 60) }}", "h", "duration"),
+            self.calculate("remainOutTime", self.remainingOutput, "h", "duration"),
+            self.calculate("remainInputTime", self.remainingInput, "h", "duration"),
             self.sensor("packNum", None),
             self.sensor("electricLevel", None, "%", "battery"),
+            self.sensor("gridPower", None, "W", "power", "measurement"),
             self.sensor("energyPower", None, "W"),
             self.sensor("inverseMaxPower", None, "W"),
             self.sensor("solarPower1", None, "W", "power", "measurement"),
@@ -67,12 +67,13 @@ class Hub2000(ZendureDevice):
         selects = [
             self.select("acMode", {1: "input", 2: "output"}, self.update_ac_mode),
             self.select("passMode", {0: "auto", 2: "on", 1: "off"}),
+            self.select("autoRecover", {0: "off", 1: "on"}),
         ]
         ZendureSelect.add(selects)
 
     def entitiesBattery(self, battery: ZendureBattery, _sensors: list[ZendureSensor]) -> None:
         self.batCount += 1
-        self.powerMin = (-1200 if battery.kwh == 2 else -800) if self.batCount == 1 else -1800
+        self.powerMin = (-1200 if battery.kwh > 1 else -800) if self.batCount == 1 else -1800
         self.numbers[0].update_range(0, abs(self.powerMin))
 
     def entityUpdate(self, key: Any, value: Any) -> bool:

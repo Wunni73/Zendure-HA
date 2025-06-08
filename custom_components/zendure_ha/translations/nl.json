@@ -16,7 +16,7 @@
           "password": "Zendure Wachtwoord",
           "p1meter": "P1 Sensor voor slimme matching",
           "mqttlog": "MQTT-Communicatie loggen",
-          "mqttlocal": "Lokale Mosquitto MQTT AddOn gebruiken",
+          "mqttlocal": "Lokale MQTT gebruiken",
           "wifissid": "Wifi SSID",
           "wifipsw": "Wifi Wachtwoord"
         }
@@ -86,14 +86,33 @@
           "10": "Elektriciteitsprijs"
         }
       },
-      "aggr_charge_totalk_wh": {
+      "aggr_charge_total": {
         "name": "Total geladen"
       },
-      "aggr_discharge_totalk_wh": {
+      "aggr_discharge_total": {
         "name": "Total geleverd"
       },
-      "aggr_solar_totalk_wh": {
+      "aggr_solar_total": {
         "name": "Total Zonne-energie"
+      },
+      "mqtt_reset": {
+        "name": "Reset MQTT Connectie"
+      },
+      "connection_status": {
+        "name": "Connectie Status",
+        "state": {
+          "0": "Onbekend",
+          "1": "BLE",
+          "2": "Lokale MQTT",
+          "3": "Lokale MQTT en BLE",
+          "4": "Zendure Cloud",
+          "5": "Zendure Cloud en BLE",
+          "8": "Zendure App",
+          "9": "Zendure App en BLE",
+          "10": "Lokale Mqtt, Zendure App",
+          "11": "Lokale Mqtt, Zendure App en BLE",
+          "16": "BLE Fout"
+        }
       },
       "so_h": {
         "name": "Gezondheidsstatus"

@@ -16,7 +16,7 @@
           "password": "Zendure Passwort",
           "p1meter": "P1 Sensor für Smart Matching",
           "mqttlog": "MQTT-Kommunikation loggen",
-          "mqttlocal": "Lokalen Mosquitto MQTT AddOn verwenden",
+          "mqttlocal": "Lokalen MQTT verwenden",
           "wifissid": "Wifi SSID",
           "wifipsw": "Wifi Passwort"
         }
@@ -86,14 +86,33 @@
           "10": "Strompreis"
         }
       },
-      "aggr_charge_totalk_wh": {
-        "name": "Total Charged"
+      "aggr_charge_total": {
+        "name": "Akku geladen"
       },
-      "aggr_discharge_totalk_wh": {
-        "name": "Total Discharged"
+      "aggr_discharge_total": {
+        "name": "Akku entladen"
       },
-      "aggr_solar_totalk_wh": {
-        "name": "Total Solar"
+      "aggr_solar_total": {
+        "name": "Solar-Energie erzeugt"
+      },
+      "mqtt_reset": {
+        "name": "Reset MQTT Verbindung"
+      },
+      "connection_status": {
+        "name": "Connection Status",
+        "state": {
+          "0": "Unbekannt",
+          "1": "BLE",
+          "2": "lokal MQTT",
+          "3": "lokal MQTT und BLE",
+          "4": "Zendure Cloud",
+          "5": "Zendure Cloud und BLE",
+          "8": "Zendure App",
+          "9": "Zendure App und BLE",
+          "10": "Lokal Mqtt und Zendure App",
+          "11": "Lokal Mqtt, Zendure App und BLE",
+          "16": "BLE Fehler"
+        }
       },
       "so_h": {
         "name": "Gesundsheitszustand"

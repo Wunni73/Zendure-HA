@@ -7,14 +7,16 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant.components import mqtt
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import (ConfigEntry, ConfigFlow,
+                                          ConfigFlowResult, OptionsFlow)
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 
 from .api import Api
-from .const import CONF_MQTTLOCAL, CONF_MQTTLOG, CONF_P1METER, CONF_WIFIPSW, CONF_WIFISSID, DOMAIN
+from .const import (CONF_MQTTLOCAL, CONF_MQTTLOG, CONF_P1METER, CONF_WIFIPSW,
+                    CONF_WIFISSID, DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +25,8 @@ class ZendureConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Zendure Integration."""
 
     VERSION = 1
+    MINOR_VERSION = 1
+
     _input_data: dict[str, Any]
     data_schema = vol.Schema({
         vol.Required(CONF_USERNAME): str,
@@ -65,10 +69,8 @@ class ZendureConfigFlow(ConfigFlow, domain=DOMAIN):
             raise ZendureConnectionError
 
         mqttlocal = user_input.get(CONF_MQTTLOCAL, False)
-        if mqttlocal:
-            info = self.hass.config_entries.async_loaded_entries(mqtt.DOMAIN)
-            if info is None or len(info) == 0 or self.hass.config.api.local_ip is None:
-                raise Exception("MQTT addon is not found")
+        if mqttlocal and not await mqtt.async_wait_for_mqtt_client(self.hass):
+            raise Exception("MQTT addon is not found")
 
     async def create_manager(self) -> ConfigFlowResult:
         if self._user_input is None:
